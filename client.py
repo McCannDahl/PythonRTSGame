@@ -13,10 +13,7 @@ pygame.display.set_caption('Game')
 
 clock = pygame.time.Clock()
 
-sprite1 = pygame.image.load('images/BlueThing/BlueThing_front.png')
-sprite2 = pygame.image.load('images/Ladette/Ladette_front.png')
-sprite3 = pygame.image.load('images/TrashPanda/TrashPanda_front.png')
-sprite4 = pygame.image.load('images/Tubby/Tubby_front.png')
+sprite1 = pygame.image.load('images/test.png')
 
 serverAddr = '127.0.0.1'
 if len(sys.argv) == 2:
@@ -26,7 +23,7 @@ s.connect((serverAddr, 4321))
 
 playerid = 0
 
-sprites = { 0: sprite1, 1: sprite2, 2: sprite3, 3: sprite4 }
+sprites = { 0: sprite1 }
 
 class Minion:
   def __init__(self, x, y, id):
@@ -53,7 +50,7 @@ class Minion:
       self.id = playerid
 
   def render(self):
-    screen.blit(sprites[self.id % 4], (self.x, self.y))
+    screen.blit(sprites[0], (self.x, self.y))
 
 
 #game events
