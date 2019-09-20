@@ -4,16 +4,17 @@ import pickle
 import select
 import socket
 
-WIDTH = 400
-HEIGHT = 400
+import unit
+import camera
+
+WIDTH = 1000
+HEIGHT = 600
 BUFFERSIZE = 2048
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Game')
 
 clock = pygame.time.Clock()
-
-sprite1 = pygame.image.load('images/test.png')
 
 serverAddr = '127.0.0.1'
 if len(sys.argv) == 2:
@@ -22,36 +23,6 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((serverAddr, 4321))
 
 playerid = 0
-
-sprites = { 0: sprite1 }
-
-class Minion:
-  def __init__(self, x, y, id):
-    self.x = x
-    self.y = y
-    self.vx = 0
-    self.vy = 0
-    self.id = id
-
-  def update(self):
-    self.x += self.vx
-    self.y += self.vy
-
-    if self.x > WIDTH - 50:
-      self.x = WIDTH - 50
-    if self.x < 0:
-      self.x = 0
-    if self.y > HEIGHT - 50:
-      self.y = HEIGHT - 50
-    if self.y < 0:
-      self.y = 0
-
-    if self.id == 0:
-      self.id = playerid
-
-  def render(self):
-    screen.blit(sprites[0], (self.x, self.y))
-
 
 #game events
 #['event type', param1, param2]
@@ -67,12 +38,8 @@ class Minion:
 # position update
 # ['position update', id, x, y]
 
-class GameEvent:
-  def __init__(self, vx, vy):
-    self.vx = vx
-    self.vy = vy
-
-cc = Minion(50, 50, 0)
+camera = camera.Camera()
+cc = unit.Minion(50, 50, 0)
 
 minions = []
 
@@ -88,32 +55,38 @@ while True:
       minions = []
       for minion in gameEvent:
         if minion[0] != playerid:
-          minions.append(Minion(minion[1], minion[2], minion[0]))
+          minions.append(unit.Minion(minion[1], minion[2], minion[0]))
     
   for event in pygame.event.get():
     if event.type == QUIT:
     	pygame.quit()
     	sys.exit()
     if event.type == KEYDOWN:
-      if event.key == K_LEFT: cc.vx = -10
-      if event.key == K_RIGHT: cc.vx = 10
-      if event.key == K_UP: cc.vy = -10
-      if event.key == K_DOWN: cc.vy = 10
+      if event.key == K_a: camera.vx = -10
+      if event.key == K_d: camera.vx = 10
+      if event.key == K_w: camera.vy = -10
+      if event.key == K_s: camera.vy = 10
     if event.type == KEYUP:
-      if event.key == K_LEFT and cc.vx == -10: cc.vx = 0
-      if event.key == K_RIGHT and cc.vx == 10: cc.vx = 0
-      if event.key == K_UP and cc.vy == -10: cc.vy = 0
-      if event.key == K_DOWN and cc.vy == 10: cc.vy = 0
+      if event.key == K_a and camera.vx == -10: camera.vx = 0
+      if event.key == K_d and camera.vx == 10: camera.vx = 0
+      if event.key == K_w and camera.vy == -10: camera.vy = 0
+      if event.key == K_s and camera.vy == 10: camera.vy = 0
+    if event.type == MOUSEBUTTONDOWN:
+      pos = pygame.mouse.get_pos()
+      print('mouse down')
+    if event.type == MOUSEBUTTONUP:
+      pos = pygame.mouse.get_pos()
+      print('mouse up')
 
   clock.tick(60)
   screen.fill((255,255,255))
 
-  cc.update()
+  cc.update(camera)
 
   for m in minions:
-    m.render()
+    m.render(screen)
 
-  cc.render()
+  cc.render(screen)
 
   pygame.display.flip()
 
