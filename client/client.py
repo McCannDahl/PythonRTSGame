@@ -43,7 +43,7 @@ cc = unit.Minion(50, 50, 0)
 
 minions = []
 
-while True:
+def getNetworkCalls():
   ins, outs, ex = select.select([s], [], [], 0)
   for inm in ins: 
     gameEvent = pickle.loads(inm.recv(BUFFERSIZE))
@@ -56,7 +56,8 @@ while True:
       for minion in gameEvent:
         if minion[0] != playerid:
           minions.append(unit.Minion(minion[1], minion[2], minion[0]))
-    
+
+def getKeyboardAndMouseInputs():
   for event in pygame.event.get():
     if event.type == QUIT:
     	pygame.quit()
@@ -78,19 +79,27 @@ while True:
       pos = pygame.mouse.get_pos()
       print('mouse up')
 
+def drawEverything():
   clock.tick(60)
   screen.fill((255,255,255))
+  updateEverything()
+  for m in minions:
+    m.render(screen,camera)
+  cc.render(screen,camera)
+  pygame.display.flip()
 
+def updateEverything():
   camera.update()
   cc.update()
 
-  for m in minions:
-    m.render(screen,camera)
-
-  cc.render(screen,camera)
-
-  pygame.display.flip()
-
+def sendNetworkCalls():
   ge = ['position update', playerid, cc.x, cc.y]
   s.send(pickle.dumps(ge))
+
+while True:
+  getNetworkCalls()
+  getKeyboardAndMouseInputs()
+  drawEverything()
+  sendNetworkCalls()
+
 s.close()
