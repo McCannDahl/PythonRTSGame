@@ -9,12 +9,9 @@ class Minion:
     self.vy = 0
     self.id = id
 
-  def update(self, camera):
+  def update(self):
     self.x += self.vx
     self.y += self.vy
 
-    self.x += camera.x
-    self.y += camera.y
-
-  def render(self, screen):
-    pygame.draw.circle(screen, BLUE, (self.x, self.y), 20)
+  def render(self, screen, camera):
+    pygame.draw.circle(screen, BLUE, (self.x+camera.x, self.y+camera.y), 20)

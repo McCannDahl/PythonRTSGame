@@ -1,3 +1,6 @@
+
+print('hello....')
+
 import socket
 import asyncore
 import select
@@ -5,6 +8,8 @@ import random
 import pickle
 import time
 import unit
+
+print('started importing....')
 
 BUFFERSIZE = 512
 
@@ -66,5 +71,6 @@ class SecondaryServer(asyncore.dispatcher_with_send):
       updateWorld(recievedData)
     else: self.close()
 
+print('started')
 MainServer(4321)
 asyncore.loop()

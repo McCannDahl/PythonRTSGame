@@ -62,15 +62,15 @@ while True:
     	pygame.quit()
     	sys.exit()
     if event.type == KEYDOWN:
-      if event.key == K_a: camera.vx = -10
-      if event.key == K_d: camera.vx = 10
-      if event.key == K_w: camera.vy = -10
-      if event.key == K_s: camera.vy = 10
+      if event.key == K_a: camera.vx = -3
+      if event.key == K_d: camera.vx = 3
+      if event.key == K_w: camera.vy = -3
+      if event.key == K_s: camera.vy = 3
     if event.type == KEYUP:
-      if event.key == K_a and camera.vx == -10: camera.vx = 0
-      if event.key == K_d and camera.vx == 10: camera.vx = 0
-      if event.key == K_w and camera.vy == -10: camera.vy = 0
-      if event.key == K_s and camera.vy == 10: camera.vy = 0
+      if event.key == K_a and camera.vx == -3: camera.vx = 0
+      if event.key == K_d and camera.vx == 3: camera.vx = 0
+      if event.key == K_w and camera.vy == -3: camera.vy = 0
+      if event.key == K_s and camera.vy == 3: camera.vy = 0
     if event.type == MOUSEBUTTONDOWN:
       pos = pygame.mouse.get_pos()
       print('mouse down')
@@ -81,12 +81,13 @@ while True:
   clock.tick(60)
   screen.fill((255,255,255))
 
-  cc.update(camera)
+  camera.update()
+  cc.update()
 
   for m in minions:
-    m.render(screen)
+    m.render(screen,camera)
 
-  cc.render(screen)
+  cc.render(screen,camera)
 
   pygame.display.flip()
 
