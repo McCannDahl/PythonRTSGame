@@ -46,3 +46,17 @@ Client side Sudo Code
         buildings
             build units/gather resources
     
+
+#game events
+#['event type', param1, param2]
+#
+#event types: 
+# id update 
+# ['id update', id]
+#
+# player locations
+# ['player locations', [id, x, y], [id, x, y] ...]
+
+#user commands
+# position update
+# ['position update', id, x, y]

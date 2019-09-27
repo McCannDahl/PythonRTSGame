@@ -5,7 +5,6 @@ class Camera:
     self.y = 0
     self.vx = 0
     self.vy = 0
-    self.zoom = 0
 
   def update(self):
     self.x += self.vx

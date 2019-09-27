@@ -22,46 +22,35 @@ if len(sys.argv) == 2:
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((serverAddr, 4321))
 
-playerid = 0
-
-#game events
-#['event type', param1, param2]
-#
-#event types: 
-# id update 
-# ['id update', id]
-#
-# player locations
-# ['player locations', [id, x, y], [id, x, y] ...]
-
-#user commands
-# position update
-# ['position update', id, x, y]
+playerId = 0
 
 camera = camera.Camera()
 cc = unit.Minion(50, 50, 0)
 
 minions = []
 
+playing = True
+
 def getNetworkCalls():
+  global playerId
   ins, outs, ex = select.select([s], [], [], 0)
   for inm in ins: 
     gameEvent = pickle.loads(inm.recv(BUFFERSIZE))
     if gameEvent[0] == 'id update':
-      playerid = gameEvent[1]
-      print(playerid)
+      playerId = gameEvent[1]
+      print(playerId)
     if gameEvent[0] == 'player locations':
       gameEvent.pop(0)
       minions = []
       for minion in gameEvent:
-        if minion[0] != playerid:
+        if minion[0] != playerId:
           minions.append(unit.Minion(minion[1], minion[2], minion[0]))
 
 def getKeyboardAndMouseInputs():
+  global playing
   for event in pygame.event.get():
     if event.type == QUIT:
-    	pygame.quit()
-    	sys.exit()
+      playing = False
     if event.type == KEYDOWN:
       if event.key == K_a: camera.vx = -3
       if event.key == K_d: camera.vx = 3
@@ -82,7 +71,6 @@ def getKeyboardAndMouseInputs():
 def drawEverything():
   clock.tick(60)
   screen.fill((255,255,255))
-  updateEverything()
   for m in minions:
     m.render(screen,camera)
   cc.render(screen,camera)
@@ -93,13 +81,17 @@ def updateEverything():
   cc.update()
 
 def sendNetworkCalls():
-  ge = ['position update', playerid, cc.x, cc.y]
+  ge = ['position update', playerId, cc.x, cc.y]
   s.send(pickle.dumps(ge))
 
-while True:
+while playing:
   getNetworkCalls()
-  getKeyboardAndMouseInputs()
   drawEverything()
+  updateEverything()
   sendNetworkCalls()
+  getKeyboardAndMouseInputs()
 
+ge = ['quit', playerId]
+s.send(pickle.dumps(ge))
+pygame.quit()
 s.close()
