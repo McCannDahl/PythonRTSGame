@@ -22,35 +22,39 @@ if len(sys.argv) == 2:
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((serverAddr, 4321))
 
-playerId = 0
+playerId = -1
+myPlayer = {}
+mapDct = {}
 
 camera = camera.Camera()
-cc = unit.Minion(50, 50, 0)
-
-minions = []
-
 playing = True
+starting = True
 
 def getNetworkCalls():
-  global playerId
+  global playerId, mapDct
   ins, outs, ex = select.select([s], [], [], 0)
   for inm in ins: 
     gameEvent = pickle.loads(inm.recv(BUFFERSIZE))
-    if gameEvent[0] == 'id update':
+    print(gameEvent)
+    if gameEvent[0] == 'init update':
+      print('init update')
       playerId = gameEvent[1]
       print(playerId)
-    if gameEvent[0] == 'player locations':
-      gameEvent.pop(0)
-      minions = []
-      for minion in gameEvent:
-        if minion[0] != playerId:
-          minions.append(unit.Minion(minion[1], minion[2], minion[0]))
+      mapDct = gameEvent[2]
+      print(mapDct)
+    #if gameEvent[0] == 'player locations':
+    #  gameEvent.pop(0)
+    #  minions = []
+    #  for minion in gameEvent:
+    #    if minion[0] != playerId:
+    #      minions.append(unit.Minion(minion[1], minion[2], minion[0]))
 
 def getKeyboardAndMouseInputs():
   global playing
   for event in pygame.event.get():
     if event.type == QUIT:
       playing = False
+      starting = False
     if event.type == KEYDOWN:
       if event.key == K_a: camera.vx = -3
       if event.key == K_d: camera.vx = 3
@@ -71,18 +75,25 @@ def getKeyboardAndMouseInputs():
 def drawEverything():
   clock.tick(60)
   screen.fill((255,255,255))
-  for m in minions:
-    m.render(screen,camera)
-  cc.render(screen,camera)
+  #for m in minions:
+  #  m.render(screen,camera)
   pygame.display.flip()
 
 def updateEverything():
   camera.update()
-  cc.update()
 
 def sendNetworkCalls():
-  ge = ['position update', playerId, cc.x, cc.y]
-  s.send(pickle.dumps(ge))
+  pass
+  # ge = ['position update', playerId, cc.x, cc.y]
+  # s.send(pickle.dumps(ge))
+
+while starting:
+  getNetworkCalls()
+  drawEverything()
+  getKeyboardAndMouseInputs()
+  if playerId != -1 and len(mapDct.keys()) > 0:
+    print("Starting is false, now playing")
+    starting = False
 
 while playing:
   getNetworkCalls()

@@ -9,12 +9,14 @@ import pickle
 import time
 import unit
 import player
+import threading
 
 print('started importing....')
 
 BUFFERSIZE = 512
 
 players = []
+mapDct = {"name": "Montreal"}
 
 def removePlayer(playerId):
   removeIndex = -1
@@ -24,13 +26,8 @@ def removePlayer(playerId):
   if removeIndex >= 0:
     print ('removePlayer '+str(removeIndex))
     players.pop(removeIndex)
-
-def updatePositions(playerId, x, y):
-  for p in players:
-    if p.playerId == playerId:
-      p.x = x
-      p.y = y
-  sendPositions()
+  if len(players) <= 0:
+    raise asyncore.ExitNow('Server is quitting!')
 
 def sendPositions():
   update = ['player locations']
@@ -47,8 +44,6 @@ def readData(message):
   messageType = arr[0]
   if messageType == "quit":
     removePlayer(arr[1]) 
-  elif messageType == 'position update':
-    updatePositions(arr[1],arr[2],arr[3])
 
 class MainServer(asyncore.dispatcher):
   def __init__(self, port):
@@ -61,9 +56,11 @@ class MainServer(asyncore.dispatcher):
     print ('Connection address:' + addr[0] + " " + str(addr[1]))
     playerId = len(players)
     newplayer = player.Player(playerId,conn)
-    conn.send(pickle.dumps(['your id is', playerId]))
     players.append(newplayer)
     SecondaryServer(conn)
+    print(mapDct)
+    print(pickle.dumps(['init update', playerId, mapDct]))
+    conn.send(pickle.dumps(['init update', playerId, mapDct]))
 
 class SecondaryServer(asyncore.dispatcher_with_send):
   def handle_read(self):
@@ -75,3 +72,19 @@ class SecondaryServer(asyncore.dispatcher_with_send):
 print('started')
 MainServer(4321)
 asyncore.loop()
+
+
+
+#----------------------------------------------------------------------
+
+WAIT_SECONDS = 0.5
+def updateEverything():
+  print("Updating Everything!")
+  updateAllUnits()
+  threading.Timer(WAIT_SECONDS, updateEverything).start()
+
+def updateAllUnits():
+  for player in players:
+    for unit in player.units:
+      unit.update()
+updateEverything()
